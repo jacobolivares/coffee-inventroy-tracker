@@ -681,17 +681,32 @@
       color: var(--text-main);
     }
 
-    .table-deficit-badge {
+    .table-order-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       font-weight: 700;
       color: var(--danger-badge);
       background: var(--danger-bg);
-      padding: 4px 10px;
+      padding: 6px 12px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--danger-border);
-      font-size: 0.88rem;
+      font-size: 0.92rem;
+      letter-spacing: 0.2px;
+    }
+
+    .table-order-badge.at-min {
+      color: #92400E;
+      background: #FEF3C7;
+      border-color: #FDE68A;
+    }
+
+    .order-needed-hint {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--danger-badge);
     }
 
     .quick-restock-btn {
@@ -1052,14 +1067,14 @@
     const SAMPLE_ITEMS = [
       { id: "item-1", name: "House Espresso Roast", qty: 2, min: 6, unit: "bags" },
       { id: "item-2", name: "Barista Oat Milk", qty: 3, min: 10, unit: "cartons" },
-      { id: "item-3", name: "Whole Milk (Organic)", qty: 6, min: 6, unit: "gallons" },
+      { id: "item-3", name: "Whole Milk (Organic)", qty: 3, min: 5, unit: "gallons" },
       { id: "item-4", name: "Madagascar Vanilla Syrup", qty: 4, min: 2, unit: "bottles" },
       { id: "item-5", name: "Dark Chocolate Sauce", qty: 1, min: 3, unit: "bottles" },
       { id: "item-6", name: "Chai Tea Concentrate", qty: 5, min: 4, unit: "boxes" },
       { id: "item-7", name: "Cold Brew Filters", qty: 1, min: 2, unit: "boxes" }
     ];
 
-    const STORAGE_KEY = "beanstock_coffee_inventory_v1";
+    const STORAGE_KEY = "beanstock_coffee_inventory_v2";
 
     // --- APPLICATION STATE ---
     let items = [];
@@ -1148,6 +1163,13 @@
 
     function isReorderNeeded(item) {
       return Number(item.qty) <= Number(item.min);
+    }
+
+    function getOrderAmount(item) {
+      const current = Number(item.qty);
+      const min = Number(item.min);
+      const needed = min - current;
+      return Math.max(0, Math.round(needed * 100) / 100);
     }
 
     function escapeHtml(str) {
@@ -1394,8 +1416,9 @@
 
       let text = `📋 COFFEE SHOP REORDER LIST (${new Date().toLocaleDateString()}):\n\n`;
       reorderItems.forEach(item => {
-        const deficit = Math.max(0, item.min - item.qty);
-        text += `• ${item.name}: Current: ${item.qty} ${item.unit} | Min: ${item.min} ${item.unit} (Needs: +${deficit} ${item.unit})\n`;
+        const orderQty = getOrderAmount(item);
+        const orderText = orderQty > 0 ? `Order ${orderQty} ${item.unit}.` : `At minimum threshold (${item.qty} ${item.unit})`;
+        text += `• ${item.name}: Current: ${item.qty} ${item.unit} | Min: ${item.min} ${item.unit} ➔ ${orderText}\n`;
       });
       text += `\nTotal items to order: ${reorderItems.length}`;
 
@@ -1471,6 +1494,8 @@
         const badgeMarkup = needsReorder
           ? `<span class="badge badge-reorder">⚠️ Reorder Needed</span>`
           : `<span class="badge badge-ok">✅ In Stock</span>`;
+        const orderQty = getOrderAmount(item);
+        const orderNeededText = orderQty > 0 ? `Order ${orderQty} ${escapeHtml(item.unit)}.` : `At minimum threshold.`;
 
         return `
           <div class="${cardClass}">
@@ -1486,6 +1511,7 @@
               <div class="stock-numbers">
                 <span class="stock-current">${item.qty} <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">${escapeHtml(item.unit)}</span></span>
                 <span class="stock-min">Minimum Threshold: <strong>${item.min}</strong></span>
+                ${needsReorder ? `<span class="order-needed-hint">📦 ${orderNeededText}</span>` : ''}
               </div>
               <div class="qty-stepper">
                 <button class="step-btn" title="Decrease stock by 1" onclick="adjustQty('${item.id}', -1)">−</button>
@@ -1521,7 +1547,12 @@
       }
 
       let rowsHtml = reorderItems.map(item => {
-        const deficit = Math.max(0, Math.round((item.min - item.qty) * 10) / 10);
+        const orderQty = getOrderAmount(item);
+        const orderText = orderQty > 0
+          ? `Order ${orderQty} ${escapeHtml(item.unit)}.`
+          : `At minimum threshold.`;
+        const badgeClass = orderQty > 0 ? "table-order-badge" : "table-order-badge at-min";
+
         return `
           <tr>
             <td class="table-ingredient">
@@ -1529,14 +1560,21 @@
               <div style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">${escapeHtml(item.unit)}</div>
             </td>
             <td>
-              <strong style="color: var(--danger-badge); font-size: 1.1rem;">${item.qty}</strong> ${escapeHtml(item.unit)}
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <strong style="color: var(--danger-badge); font-size: 1.15rem; min-width: 22px;">${item.qty}</strong>
+                <span style="color: var(--text-muted); font-size: 0.85rem;">${escapeHtml(item.unit)}</span>
+                <div class="qty-stepper" style="margin-left: 4px;">
+                  <button class="step-btn" style="width: 28px; height: 28px; font-size: 0.95rem;" title="Decrease quantity" onclick="adjustQty('${item.id}', -1)">−</button>
+                  <button class="step-btn" style="width: 28px; height: 28px; font-size: 0.95rem;" title="Increase quantity" onclick="adjustQty('${item.id}', 1)">+</button>
+                </div>
+              </div>
             </td>
             <td>
               ${item.min} ${escapeHtml(item.unit)}
             </td>
             <td>
-              <span class="table-deficit-badge">
-                +${deficit} ${escapeHtml(item.unit)} needed
+              <span class="${badgeClass}">
+                ${orderText}
               </span>
             </td>
             <td style="text-align: right;">
@@ -1555,7 +1593,7 @@
               <th>Ingredient</th>
               <th>Current Stock</th>
               <th>Min Threshold</th>
-              <th>Shortage (Deficit)</th>
+              <th>Amount to Order</th>
               <th style="text-align: right;">Quick Restock</th>
             </tr>
           </thead>
