@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BeanStock – Coffee Shop Inventory & Reorder Tracker</title>
+  <style>
+    :root {
+      --bg-page: #F7F4EE;
+      --bg-card: #FFFFFF;
+      --text-main: #271A12;
+      --text-muted: #6E6157;
+      --border: #E5DCCE;
+      --primary: #442B1D;
+      --primary-hover: #311E13;
+      --primary-soft: #F1ECE3;
+      --accent: #C27438;
+      --accent-hover: #A9612A;
+      --danger-bg: #FDF2F2;
+      --danger-border: #F8B4B4;
+      --danger-text: #9B1C1C;
+      --danger-badge: #E02424;
+      --success-bg: #F3FAF7;
+      --success-border: #BCF0DA;
+      --success-text: #03543F;
+      --success-badge: #0E9F6E;
+      --shadow-sm: 0 1px 3px rgba(39, 26, 18, 0.06);
+      --shadow-md: 0 4px 14px rgba(39, 26, 18, 0.08);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-stack);
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding-bottom: 48px;
+    }
+
+    /* Header */
+    header {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-text h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-text p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+      max-width: 620px;
+    }
+
+    .quick-reset-btn {
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .quick-reset-btn:hover {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* KPI Summary Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .kpi-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .kpi-value {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .kpi-card.alert {
+      border-color: var(--danger-border);
+      background-color: #FFFDFD;
+    }
+
+    .kpi-card.alert .kpi-value {
+      color: var(--danger-badge);
+    }
+
+    .kpi-card.success .kpi-value {
+      color: var(--success-badge);
+    }
+
+    /* View Switcher / Tabs */
+    .view-tabs {
+      display: flex;
+      background: #EBE4D8;
+      padding: 4px;
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      gap: 6px;
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 12px 18px;
+      border: none;
+      background: transparent;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-button.active {
+      background: var(--bg-card);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: #D9D0C3;
+      color: var(--text-main);
+    }
+
+    .tab-badge.badge-alert {
+      background: var(--danger-badge);
+      color: #FFFFFF;
+    }
+
+    /* View Panels */
+    .view-panel {
+      display: none;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    /* Add Item Card */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 26px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+    }
+
+    .form-header {
+      margin-bottom: 16px;
+    }
+
+    .form-header h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-header p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    /* Form Fields Grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      background: #FAF8F5;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(194, 116, 56, 0.15);
+      background: #FFFFFF;
+    }
+
+    .form-group input.field-error {
+      border-color: var(--danger-badge);
+      background-color: var(--danger-bg);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background-color: var(--accent);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background-color: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background-color: #E3D9CC;
+    }
+
+    /* Error Banner */
+    .error-banner {
+      display: none;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-top: 14px;
+      color: var(--danger-text);
+      font-size: 0.9rem;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .error-banner.visible {
+      display: flex;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: #FFFFFF;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      font-size: 0.92rem;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: all 0.25s ease;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Inventory Toolbar */
+    .inventory-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
+    }
+
+    .search-input-wrapper input {
+      width: 100%;
+      padding: 9px 12px 9px 34px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.92rem;
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    .search-input-wrapper input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 6px;
+    }
+
+    .pill-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+
+    /* Inventory List Cards */
+    .inventory-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+
+    .item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .item-card.reorder-needed {
+      border-color: var(--danger-border);
+      background: linear-gradient(180deg, #FFFDFD 0%, #FFFFFF 100%);
+      box-shadow: 0 2px 8px rgba(224, 36, 36, 0.08);
+    }
+
+    .item-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .item-name {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .item-unit-tag {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: var(--primary-soft);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge-reorder {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      border: 1px solid var(--danger-border);
+    }
+
+    .badge-ok {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border: 1px solid var(--success-border);
+    }
+
+    /* Quantity Controls */
+    .stock-info-box {
+      background: #FAF8F5;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stock-numbers {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stock-current {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .stock-min {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .qty-stepper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .step-btn {
+      width: 34px;
+      height: 34px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+
+    .step-btn:hover {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+    }
+
+    .step-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Card Actions */
+    .item-card-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px solid #F0EAE1;
+    }
+
+    .btn-icon-subtle {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-icon-subtle:hover {
+      background: var(--primary-soft);
+      color: var(--text-main);
+    }
+
+    .btn-icon-subtle.delete:hover {
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    /* REORDER LIST VIEW */
+    .reorder-view-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 28px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .reorder-view-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .reorder-view-header h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reorder-view-header p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .reorder-actions-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Reorder Table */
+    .reorder-table-wrapper {
+      overflow-x: auto;
+    }
+
+    .reorder-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .reorder-table th {
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border);
+      background: #FAF8F5;
+    }
+
+    .reorder-table td {
+      padding: 14px;
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .reorder-table tr:hover td {
+      background-color: #FFFDF9;
+    }
+
+    .table-ingredient {
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .table-deficit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      color: var(--danger-badge);
+      background: var(--danger-bg);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--danger-border);
+      font-size: 0.88rem;
+    }
+
+    .quick-restock-btn {
+      background: var(--primary-soft);
+      border: 1px solid var(--border);
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .quick-restock-btn:hover {
+      background: var(--accent);
+      color: #FFFFFF;
+      border-color: var(--accent);
+    }
+
+    /* Empty States */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .empty-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .empty-desc {
+      font-size: 0.9rem;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    /* Edit Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(39, 26, 18, 0.45);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #FFFFFF !important;
+        padding: 0 !important;
+      }
+      header, .kpi-grid, .view-tabs, .form-card, .inventory-toolbar, .reorder-actions-group, .quick-restock-btn, .quick-reset-btn {
+        display: none !important;
+      }
+      .view-panel {
+        display: none !important;
+      }
+      #view-reorder {
+        display: block !important;
+      }
+      .reorder-view-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      .reorder-table th, .reorder-table td {
+        border-color: #333 !important;
+      }
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .form-grid .form-group:first-child {
+        grid-column: span 2;
+      }
+      .form-grid .btn {
+        grid-column: span 2;
+        width: 100%;
+        margin-top: 4px;
+      }
+      .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .inventory-list {
+        grid-template-columns: 1fr;
+      }
+      .reorder-view-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .reorder-actions-group {
+        width: 100%;
+      }
+      .reorder-actions-group .btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-text">
+        <h1>☕ BeanStock</h1>
+        <p>Coffee shop inventory and automated reorder tracker. Monitor your cafe stock and immediately spot items that need purchasing.</p>
+      </div>
+      <button class="quick-reset-btn" id="reset-sample-btn" title="Reload default coffee shop ingredients">
+        ↻ Reset Demo Items
+      </button>
+    </header>
+
+    <!-- Top KPI Metrics -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Total Ingredients</span>
+        <span class="kpi-value" id="kpi-total-items">0</span>
+      </div>
+      <div class="kpi-card alert">
+        <span class="kpi-label">⚠️ Needs Reorder</span>
+        <span class="kpi-value" id="kpi-reorder-items">0</span>
+      </div>
+      <div class="kpi-card success">
+        <span class="kpi-label">✅ Fully Stocked</span>
+        <span class="kpi-value" id="kpi-stocked-items">0</span>
+      </div>
+    </section>
+
+    <!-- View Switcher Tabs -->
+    <nav class="view-tabs" role="tablist">
+      <button class="tab-button active" id="tab-inventory" data-view="inventory" role="tab" aria-selected="true">
+        📦 All Inventory
+        <span class="tab-badge" id="badge-all-count">0</span>
+      </button>
+      <button class="tab-button" id="tab-reorder" data-view="reorder" role="tab" aria-selected="false">
+        🛒 Reorder Shopping List
+        <span class="tab-badge badge-alert" id="badge-reorder-count">0</span>
+      </button>
+    </nav>
+
+    <!-- VIEW 1: INVENTORY MANAGEMENT -->
+    <main id="view-inventory" class="view-panel active" role="tabpanel">
+      <!-- Add Item Card -->
+      <section class="form-card">
+        <div class="form-header">
+          <h2><span>➕</span> Add New Ingredient</h2>
+          <p>Enter the ingredient name, current inventory count, and minimum safety threshold.</p>
+        </div>
+
+        <form id="add-item-form" novalidate>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="item-name">Ingredient Name</label>
+              <input type="text" id="item-name" placeholder="e.g. Espresso Roast Beans" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+              <label for="item-qty">Current Qty</label>
+              <input type="number" id="item-qty" placeholder="0" min="0" step="any">
+            </div>
+
+            <div class="form-group">
+              <label for="item-min">Min Stock Level</label>
+              <input type="number" id="item-min" placeholder="0" min="0" step="any">
+            </div>
+
+            <div class="form-group">
+              <label for="item-unit">Unit</label>
+              <select id="item-unit">
+                <option value="bags">bags</option>
+                <option value="cartons">cartons</option>
+                <option value="gallons">gallons</option>
+                <option value="bottles">bottles</option>
+                <option value="lbs">lbs</option>
+                <option value="boxes">boxes</option>
+                <option value="cans">cans</option>
+                <option value="units">units</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Add Ingredient
+            </button>
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div class="error-banner" id="form-error-banner" role="alert">
+            <span style="font-size: 1.1rem;">⚠️</span>
+            <span id="form-error-text">Please check the fields above.</span>
+          </div>
+        </form>
+      </section>
+
+      <!-- Inventory Toolbar -->
+      <div class="inventory-toolbar">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="inventory-search" placeholder="Search ingredients (e.g. Oat, Syrup)...">
+        </div>
+
+        <div class="filter-pills" role="radiogroup">
+          <button class="pill-btn active" data-filter="all">All Items</button>
+          <button class="pill-btn" data-filter="reorder">Needs Reorder ⚠️</button>
+          <button class="pill-btn" data-filter="stocked">In Stock ✅</button>
+        </div>
+      </div>
+
+      <!-- Inventory Cards List -->
+      <div class="inventory-list" id="inventory-container">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </main>
+
+    <!-- VIEW 2: DEDICATED REORDER LIST -->
+    <section id="view-reorder" class="view-panel" role="tabpanel">
+      <div class="reorder-view-card">
+        <div class="reorder-view-header">
+          <div>
+            <h2><span>📋</span> Supplier Reorder Sheet</h2>
+            <p>Showing only ingredients at or below their safety stock level that need to be reordered.</p>
+          </div>
+          <div class="reorder-actions-group">
+            <button class="btn btn-secondary" id="copy-reorder-btn" title="Copy clean list for email or text">
+              📄 Copy List to Clipboard
+            </button>
+            <button class="btn btn-secondary" onclick="window.print()" title="Print purchase sheet">
+              🖨️ Print Sheet
+            </button>
+          </div>
+        </div>
+
+        <div class="reorder-table-wrapper" id="reorder-table-container">
+          <!-- Rendered via JavaScript -->
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div class="modal-backdrop" id="edit-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Edit Ingredient</h3>
+        <button class="modal-close-btn" id="modal-close-x">&times;</button>
+      </div>
+      <form id="edit-item-form" novalidate>
+        <input type="hidden" id="edit-item-id">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="edit-item-name">Ingredient Name</label>
+          <input type="text" id="edit-item-name">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group">
+            <label for="edit-item-qty">Current Quantity</label>
+            <input type="number" id="edit-item-qty" min="0" step="any">
+          </div>
+          <div class="form-group">
+            <label for="edit-item-min">Minimum Stock</label>
+            <input type="number" id="edit-item-min" min="0" step="any">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="edit-item-unit">Unit</label>
+          <select id="edit-item-unit">
+            <option value="bags">bags</option>
+            <option value="cartons">cartons</option>
+            <option value="gallons">gallons</option>
+            <option value="bottles">bottles</option>
+            <option value="lbs">lbs</option>
+            <option value="boxes">boxes</option>
+            <option value="cans">cans</option>
+            <option value="units">units</option>
+          </select>
+        </div>
+
+        <div class="error-banner" id="edit-error-banner" style="margin-bottom: 12px;">
+          <span>⚠️</span>
+          <span id="edit-error-text">Please review the fields.</span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast message -->
+  <div class="toast" id="toast-msg">Notification</div>
+
+  <script>
+    // --- DEFAULT SAMPLE DATA ---
+    const SAMPLE_ITEMS = [
+      { id: "item-1", name: "House Espresso Roast", qty: 2, min: 6, unit: "bags" },
+      { id: "item-2", name: "Barista Oat Milk", qty: 3, min: 10, unit: "cartons" },
+      { id: "item-3", name: "Whole Milk (Organic)", qty: 6, min: 6, unit: "gallons" },
+      { id: "item-4", name: "Madagascar Vanilla Syrup", qty: 4, min: 2, unit: "bottles" },
+      { id: "item-5", name: "Dark Chocolate Sauce", qty: 1, min: 3, unit: "bottles" },
+      { id: "item-6", name: "Chai Tea Concentrate", qty: 5, min: 4, unit: "boxes" },
+      { id: "item-7", name: "Cold Brew Filters", qty: 1, min: 2, unit: "boxes" }
+    ];
+
+    const STORAGE_KEY = "beanstock_coffee_inventory_v1";
+
+    // --- APPLICATION STATE ---
+    let items = [];
+    let currentFilter = "all";
+    let searchQuery = "";
+    let currentView = "inventory";
+
+    // --- DOM REFERENCES ---
+    const kpiTotal = document.getElementById("kpi-total-items");
+    const kpiReorder = document.getElementById("kpi-reorder-items");
+    const kpiStocked = document.getElementById("kpi-stocked-items");
+    const badgeAllCount = document.getElementById("badge-all-count");
+    const badgeReorderCount = document.getElementById("badge-reorder-count");
+
+    const tabInventory = document.getElementById("tab-inventory");
+    const tabReorder = document.getElementById("tab-reorder");
+    const viewInventory = document.getElementById("view-inventory");
+    const viewReorder = document.getElementById("view-reorder");
+
+    const addItemForm = document.getElementById("add-item-form");
+    const inputName = document.getElementById("item-name");
+    const inputQty = document.getElementById("item-qty");
+    const inputMin = document.getElementById("item-min");
+    const inputUnit = document.getElementById("item-unit");
+    const formErrorBanner = document.getElementById("form-error-banner");
+    const formErrorText = document.getElementById("form-error-text");
+
+    const inventoryContainer = document.getElementById("inventory-container");
+    const reorderContainer = document.getElementById("reorder-table-container");
+    const searchInput = document.getElementById("inventory-search");
+    const filterPills = document.querySelectorAll(".pill-btn");
+    const copyReorderBtn = document.getElementById("copy-reorder-btn");
+    const resetSampleBtn = document.getElementById("reset-sample-btn");
+    const toastMsg = document.getElementById("toast-msg");
+
+    // Modal DOM
+    const editModal = document.getElementById("edit-modal");
+    const editForm = document.getElementById("edit-item-form");
+    const editId = document.getElementById("edit-item-id");
+    const editName = document.getElementById("edit-item-name");
+    const editQty = document.getElementById("edit-item-qty");
+    const editMin = document.getElementById("edit-item-min");
+    const editUnit = document.getElementById("edit-item-unit");
+    const editErrorBanner = document.getElementById("edit-error-banner");
+    const editErrorText = document.getElementById("edit-error-text");
+    const modalCloseX = document.getElementById("modal-close-x");
+    const modalCancelBtn = document.getElementById("modal-cancel-btn");
+
+    // --- INITIALIZATION ---
+    function init() {
+      loadItems();
+      bindEvents();
+      renderAll();
+    }
+
+    function loadItems() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          items = JSON.parse(stored);
+        } else {
+          items = [...SAMPLE_ITEMS];
+          saveItems();
+        }
+      } catch (e) {
+        items = [...SAMPLE_ITEMS];
+      }
+    }
+
+    function saveItems() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      } catch (e) {
+        console.error("Storage save failed", e);
+      }
+    }
+
+    // --- UTILITIES ---
+    function showToast(text) {
+      toastMsg.textContent = text;
+      toastMsg.classList.add("show");
+      setTimeout(() => {
+        toastMsg.classList.remove("show");
+      }, 3000);
+    }
+
+    function isReorderNeeded(item) {
+      return Number(item.qty) <= Number(item.min);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Friendly validation check
+    function validateInputs(nameVal, qtyVal, minVal, currentId = null) {
+      const trimmedName = nameVal.trim();
+
+      if (!trimmedName) {
+        return { valid: false, message: "Please provide an ingredient name (e.g., Oat Milk or Espresso Beans)." };
+      }
+
+      // Check duplicate name
+      const duplicate = items.find(i => i.id !== currentId && i.name.toLowerCase() === trimmedName.toLowerCase());
+      if (duplicate) {
+        return { valid: false, message: `"${trimmedName}" is already in your inventory list.` };
+      }
+
+      if (qtyVal === "" || isNaN(qtyVal) || Number(qtyVal) < 0) {
+        return { valid: false, message: "Current quantity cannot be empty and must be 0 or a positive number." };
+      }
+
+      if (minVal === "" || isNaN(minVal) || Number(minVal) < 0) {
+        return { valid: false, message: "Minimum stock level cannot be empty and must be 0 or a positive number." };
+      }
+
+      return { valid: true };
+    }
+
+    // --- EVENT LISTENERS ---
+    function bindEvents() {
+      // Tab switching
+      tabInventory.addEventListener("click", () => switchView("inventory"));
+      tabReorder.addEventListener("click", () => switchView("reorder"));
+
+      // Add item submit
+      addItemForm.addEventListener("submit", handleAddItem);
+
+      // Search input
+      searchInput.addEventListener("input", (e) => {
+        searchQuery = e.target.value.toLowerCase().trim();
+        renderInventoryList();
+      });
+
+      // Filter pills
+      filterPills.forEach(pill => {
+        pill.addEventListener("click", () => {
+          filterPills.forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          currentFilter = pill.getAttribute("data-filter");
+          renderInventoryList();
+        });
+      });
+
+      // Copy Reorder List
+      copyReorderBtn.addEventListener("click", handleCopyReorderList);
+
+      // Reset Sample Items
+      resetSampleBtn.addEventListener("click", () => {
+        if (confirm("Reset to default coffee shop demo items? Any custom additions will be replaced.")) {
+          items = JSON.parse(JSON.stringify(SAMPLE_ITEMS));
+          saveItems();
+          renderAll();
+          showToast("Sample coffee shop ingredients reloaded!");
+        }
+      });
+
+      // Edit Modal handlers
+      modalCloseX.addEventListener("click", closeModal);
+      modalCancelBtn.addEventListener("click", closeModal);
+      editModal.addEventListener("click", (e) => {
+        if (e.target === editModal) closeModal();
+      });
+      editForm.addEventListener("submit", handleEditSubmit);
+
+      // Realtime input clearing of error states
+      [inputName, inputQty, inputMin].forEach(input => {
+        input.addEventListener("input", () => {
+          input.classList.remove("field-error");
+          formErrorBanner.classList.remove("visible");
+        });
+      });
+    }
+
+    function switchView(viewName) {
+      currentView = viewName;
+      if (viewName === "inventory") {
+        tabInventory.classList.add("active");
+        tabInventory.setAttribute("aria-selected", "true");
+        tabReorder.classList.remove("active");
+        tabReorder.setAttribute("aria-selected", "false");
+        viewInventory.classList.add("active");
+        viewReorder.classList.remove("active");
+      } else {
+        tabReorder.classList.add("active");
+        tabReorder.setAttribute("aria-selected", "true");
+        tabInventory.classList.remove("active");
+        tabInventory.setAttribute("aria-selected", "false");
+        viewReorder.classList.add("active");
+        viewInventory.classList.remove("active");
+        renderReorderSheet();
+      }
+    }
+
+    // --- ADD INGREDIENT HANDLER ---
+    function handleAddItem(e) {
+      e.preventDefault();
+
+      const name = inputName.value;
+      const qtyStr = inputQty.value;
+      const minStr = inputMin.value;
+      const unit = inputUnit.value;
+
+      const validation = validateInputs(name, qtyStr, minStr);
+      if (!validation.valid) {
+        formErrorText.textContent = validation.message;
+        formErrorBanner.classList.add("visible");
+        if (!name.trim()) inputName.classList.add("field-error");
+        else if (qtyStr === "" || Number(qtyStr) < 0) inputQty.classList.add("field-error");
+        else inputMin.classList.add("field-error");
+        return;
+      }
+
+      formErrorBanner.classList.remove("visible");
+      [inputName, inputQty, inputMin].forEach(i => i.classList.remove("field-error"));
+
+      const newItem = {
+        id: "item-" + Date.now(),
+        name: name.trim(),
+        qty: parseFloat(qtyStr),
+        min: parseFloat(minStr),
+        unit: unit
+      };
+
+      items.unshift(newItem);
+      saveItems();
+      renderAll();
+
+      addItemForm.reset();
+      inputUnit.value = "bags";
+      showToast(`Added "${newItem.name}" to inventory!`);
+    }
+
+    // --- QUICK ADJUSTMENT (+ / -) ---
+    function adjustQty(id, delta) {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+
+      const newQty = Math.max(0, Math.round((item.qty + delta) * 10) / 10);
+      item.qty = newQty;
+      saveItems();
+      renderAll();
+    }
+
+    // --- RESTOCK DIRECTLY TO MINIMUM (IN REORDER SHEET) ---
+    function restockToMin(id) {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+
+      // Restock to at least min level + 1 for buffer
+      item.qty = item.min > 0 ? item.min + 1 : 1;
+      saveItems();
+      renderAll();
+      showToast(`Restocked "${item.name}" to ${item.qty} ${item.unit}!`);
+    }
+
+    // --- DELETE ITEM ---
+    function deleteItem(id) {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+
+      if (confirm(`Remove "${item.name}" from inventory?`)) {
+        items = items.filter(i => i.id !== id);
+        saveItems();
+        renderAll();
+        showToast(`Removed "${item.name}".`);
+      }
+    }
+
+    // --- EDIT ITEM ---
+    function openEditModal(id) {
+      const item = items.find(i => i.id === id);
+      if (!item) return;
+
+      editId.value = item.id;
+      editName.value = item.name;
+      editQty.value = item.qty;
+      editMin.value = item.min;
+      editUnit.value = item.unit || "bags";
+
+      editErrorBanner.classList.remove("visible");
+      editModal.classList.add("open");
+      editName.focus();
+    }
+
+    function closeModal() {
+      editModal.classList.remove("open");
+    }
+
+    function handleEditSubmit(e) {
+      e.preventDefault();
+      const id = editId.value;
+      const name = editName.value;
+      const qtyStr = editQty.value;
+      const minStr = editMin.value;
+      const unit = editUnit.value;
+
+      const validation = validateInputs(name, qtyStr, minStr, id);
+      if (!validation.valid) {
+        editErrorText.textContent = validation.message;
+        editErrorBanner.classList.add("visible");
+        return;
+      }
+
+      const item = items.find(i => i.id === id);
+      if (item) {
+        item.name = name.trim();
+        item.qty = parseFloat(qtyStr);
+        item.min = parseFloat(minStr);
+        item.unit = unit;
+        saveItems();
+        renderAll();
+        closeModal();
+        showToast(`Updated "${item.name}"!`);
+      }
+    }
+
+    // --- COPY REORDER LIST TO CLIPBOARD ---
+    function handleCopyReorderList() {
+      const reorderItems = items.filter(isReorderNeeded);
+
+      if (reorderItems.length === 0) {
+        showToast("Nothing to reorder! All ingredients are stocked.");
+        return;
+      }
+
+      let text = `📋 COFFEE SHOP REORDER LIST (${new Date().toLocaleDateString()}):\n\n`;
+      reorderItems.forEach(item => {
+        const deficit = Math.max(0, item.min - item.qty);
+        text += `• ${item.name}: Current: ${item.qty} ${item.unit} | Min: ${item.min} ${item.unit} (Needs: +${deficit} ${item.unit})\n`;
+      });
+      text += `\nTotal items to order: ${reorderItems.length}`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("✓ Reorder list copied to clipboard!");
+      }).catch(() => {
+        showToast("Could not copy automatically. You can print or select text.");
+      });
+    }
+
+    // --- RENDERING ---
+    function renderAll() {
+      updateKpisAndBadges();
+      renderInventoryList();
+      if (currentView === "reorder") {
+        renderReorderSheet();
+      }
+    }
+
+    function updateKpisAndBadges() {
+      const total = items.length;
+      const reorderCount = items.filter(isReorderNeeded).length;
+      const stockedCount = total - reorderCount;
+
+      kpiTotal.textContent = total;
+      kpiReorder.textContent = reorderCount;
+      kpiStocked.textContent = stockedCount;
+
+      badgeAllCount.textContent = total;
+      badgeReorderCount.textContent = reorderCount;
+
+      if (reorderCount > 0) {
+        badgeReorderCount.className = "tab-badge badge-alert";
+      } else {
+        badgeReorderCount.className = "tab-badge";
+      }
+    }
+
+    function renderInventoryList() {
+      let filtered = items.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery);
+        if (!matchesSearch) return false;
+
+        const needsReorder = isReorderNeeded(item);
+        if (currentFilter === "reorder") return needsReorder;
+        if (currentFilter === "stocked") return !needsReorder;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        let msg = "No ingredients found.";
+        if (items.length === 0) {
+          msg = "Your inventory is currently empty. Add your first ingredient above!";
+        } else if (searchQuery) {
+          msg = `No ingredients matched "${escapeHtml(searchQuery)}".`;
+        } else if (currentFilter === "reorder") {
+          msg = "Great news! No ingredients are currently low on stock.";
+        }
+
+        inventoryContainer.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-icon">☕</div>
+            <div class="empty-title">No Ingredients Found</div>
+            <div class="empty-desc">${msg}</div>
+          </div>
+        `;
+        return;
+      }
+
+      inventoryContainer.innerHTML = filtered.map(item => {
+        const needsReorder = isReorderNeeded(item);
+        const cardClass = needsReorder ? "item-card reorder-needed" : "item-card";
+        const badgeMarkup = needsReorder
+          ? `<span class="badge badge-reorder">⚠️ Reorder Needed</span>`
+          : `<span class="badge badge-ok">✅ In Stock</span>`;
+
+        return `
+          <div class="${cardClass}">
+            <div class="item-card-header">
+              <div>
+                <h3 class="item-name">${escapeHtml(item.name)}</h3>
+                <span class="item-unit-tag">${escapeHtml(item.unit || "units")}</span>
+              </div>
+              ${badgeMarkup}
+            </div>
+
+            <div class="stock-info-box">
+              <div class="stock-numbers">
+                <span class="stock-current">${item.qty} <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">${escapeHtml(item.unit)}</span></span>
+                <span class="stock-min">Minimum Threshold: <strong>${item.min}</strong></span>
+              </div>
+              <div class="qty-stepper">
+                <button class="step-btn" title="Decrease stock by 1" onclick="adjustQty('${item.id}', -1)">−</button>
+                <button class="step-btn" title="Increase stock by 1" onclick="adjustQty('${item.id}', 1)">+</button>
+              </div>
+            </div>
+
+            <div class="item-card-actions">
+              <button class="btn-icon-subtle" onclick="openEditModal('${item.id}')">
+                ✏️ Edit
+              </button>
+              <button class="btn-icon-subtle delete" onclick="deleteItem('${item.id}')">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderReorderSheet() {
+      const reorderItems = items.filter(isReorderNeeded);
+
+      if (reorderItems.length === 0) {
+        reorderContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🎉</div>
+            <div class="empty-title">Everything is Stocked Up!</div>
+            <div class="empty-desc">None of your ingredients are at or below their minimum safety thresholds right now. Great job managing stock!</div>
+          </div>
+        `;
+        return;
+      }
+
+      let rowsHtml = reorderItems.map(item => {
+        const deficit = Math.max(0, Math.round((item.min - item.qty) * 10) / 10);
+        return `
+          <tr>
+            <td class="table-ingredient">
+              ${escapeHtml(item.name)}
+              <div style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">${escapeHtml(item.unit)}</div>
+            </td>
+            <td>
+              <strong style="color: var(--danger-badge); font-size: 1.1rem;">${item.qty}</strong> ${escapeHtml(item.unit)}
+            </td>
+            <td>
+              ${item.min} ${escapeHtml(item.unit)}
+            </td>
+            <td>
+              <span class="table-deficit-badge">
+                +${deficit} ${escapeHtml(item.unit)} needed
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <button class="quick-restock-btn" onclick="restockToMin('${item.id}')" title="Set stock back to safe level">
+                ⚡ Restock (+Safe Level)
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      reorderContainer.innerHTML = `
+        <table class="reorder-table">
+          <thead>
+            <tr>
+              <th>Ingredient</th>
+              <th>Current Stock</th>
+              <th>Min Threshold</th>
+              <th>Shortage (Deficit)</th>
+              <th style="text-align: right;">Quick Restock</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // Run app on load
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
